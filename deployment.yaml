@@ -1,40 +1,36 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: mongodb
+  name: mongodb2
 spec:
   selector:
     matchLabels:
-      app: mongodb
+      app: mongodb2
   template:
     metadata:
       labels:
-        app: mongodb
+        app: mongodb2
     spec:
       containers:
-        - name: mongodb
-          image: mongo:latest
+        - name: mongodb2
+          image: mongo
           ports:
             - containerPort: 27017
           env:
-          - name: MONGODB_DB
-            value: root 
-          - name: MONGODB_HOST
-            value: localhost 
-          - name: MONGODB_PORT
-            value: 27017
-          - name: MONGODB_USERNAME
-            value: "mongouser"
-          - name: MONGODB_PASSWORD
+          - name: MONGO_INITDB_ROOT_USERNAME
+            value: "root"
+          - name: MONGO_INITDB_ROOT_PASSWORD
             value: "mongopwd"
+          - name: MONGODB_DATABASE
+            value: "rotten-potatoes-db"
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: mongodb
+  name: mongodb2
 spec:
   selector:
-    app: mongodb
+    app: mongodb2
   ports:
   - port: 27017
 ---
@@ -53,18 +49,18 @@ spec:
     spec:
       containers:
         - name: rotten-potatoes-app
-          image: franciscoviana/rotten-potatoes
+          image: franciscoviana/rotten-potatoes:v1
           ports:
-          - containerPort: 3000
+          - containerPort: 5000
           env:
           - name: MONGODB_DB
-            value: root 
+            value: rotten-potatoes-db 
           - name: MONGODB_HOST
-            value: localhost 
+            value: mongodb2 
           - name: MONGODB_PORT
-            value: 27017
+            value: "27017"
           - name: MONGODB_USERNAME
-            value: "mongouser"
+            value: "root"
           - name: MONGODB_PASSWORD
             value: "mongopwd"
 ---
@@ -77,7 +73,7 @@ spec:
     app: app
   ports:
   - port: 80
-    targetPort: 3000
-    nodePort: 30000
+    targetPort: 5000
+    nodePort: 30080
   type: NodePort
   # type: LoadBalancer
